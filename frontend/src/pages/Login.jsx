@@ -1,46 +1,44 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import authService from '../services/authService';
+import axios from 'axios';
 
-const Login = () => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+export default function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setError('');
     try {
-      await authService.login(formData);
-      navigate('/dashboard'); // Direct user to dashboard upon confirmation
+      const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+      localStorage.setItem('user', JSON.stringify(res.data));
+      navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password parameters');
+      setError(err.response?.data?.message || 'Invalid log-in credentials.');
     }
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-      <h2>Sign In</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '15px' }}>
-          <label>Email Address:</label>
-          <input type="email" style={{ width: '100%', padding: '8px', marginTop: '5px' }} required
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+    <div className="auth-container">
+      <h2 style={{ textAlign: 'center', color: '#2563eb' }}>🏛️ Smart Civic Hub</h2>
+      <p style={{ textAlign: 'center', color: '#6b7280', fontSize: '14px', marginTop: '-10px' }}>Complaint Management System</p>
+      {error && <p style={{ color: '#ef4444', textAlign: 'center', fontWeight: 'bold' }}>{error}</p>}
+      <form onSubmit={handleLogin}>
+        <div className="form-group">
+          <label>Email Address</label>
+          <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@domain.com" />
         </div>
-        <div style={{ marginBottom: '15px' }}>
-          <label>Password:</label>
-          <input type="password" style={{ width: '100%', padding: '8px', marginTop: '5px' }} required
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+        <div className="form-group">
+          <label>Password</label>
+          <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
         </div>
-        <button type="submit" style={{ width: '100%', padding: '10px', background: '#0070f3', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-          Log In
-        </button>
+        <button type="submit" className="btn">Sign In</button>
       </form>
-      <p style={{ marginTop: '15px', textAlign: 'center' }}>
-        New to the network? <Link to="/register">Create an account</Link>
+      <p style={{ marginTop: '20px', textAlign: 'center', fontSize: '14px' }}>
+        New to the platform? <Link to="/register" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 'bold' }}>Create an account</Link>
       </p>
     </div>
   );
-};
-
-export default Login;
+}
